@@ -4,6 +4,9 @@ cmake-build-debug/
 # IDE Folders
 .idea
 
+# MacOS
+.DS_Store
+
 # Prerequisites
 *.d
 
