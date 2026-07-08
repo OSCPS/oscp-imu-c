@@ -2,6 +2,8 @@
 
 **Portable C library for communicating with OSCP IMU units, supporting both streamed (RS422) and framed (CANFD) transports.**
 
+[![CI](https://github.com/oscps/oscp-imu-c/actions/workflows/ci.yml/badge.svg)](https://github.com/oscps/oscp-imu-c/actions/workflows/ci.yml)
+
 ---
 
 ## Documentation

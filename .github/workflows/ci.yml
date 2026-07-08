@@ -1,0 +1,145 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build & Test (${{ matrix.os }} / ${{ matrix.compiler }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+          - os: ubuntu-latest
+            compiler: clang
+          - os: macos-latest
+            compiler: clang
+          - os: windows-latest
+            compiler: msvc
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure (POSIX)
+        if: runner.os != 'Windows'
+        run: |
+          cmake -B build \
+          -DCMAKE_C_COMPILER=${{ matrix.compiler }} \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DOSCP_WARNINGS_AS_ERRORS=ON
+
+      - name: Configure (Windows / MSVC)
+        if: runner.os == 'Windows'
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DOSCP_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build build --config Debug --parallel
+
+      - name: Test
+        run: ctest --test-dir build --build-config Debug --output-on-failure --verbose
+
+  sanitizers:
+    name: Sanitizers (ASan + UBSan)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -B build \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DOSCP_WARNINGS_AS_ERRORS=ON \
+            -DOSCP_ENABLE_SANITIZERS=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        env:
+          ASAN_OPTIONS: detect_leaks=1:abort_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ctest --test-dir build --output-on-failure --verbose
+
+  cross-compile-arm:
+    name: Cross-compile (arm-none-eabi, Cortex-M7)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ARM toolchain
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '13.2.Rel1'
+
+      - name: Compile library for Cortex-M7 (hard float)
+        run: |
+          arm-none-eabi-gcc -c oscp_imu.c \
+            -I. -Ithird-party/cobs-c \
+            -mcpu=cortex-m7 -mthumb -mfpu=fpv5-d16 -mfloat-abi=hard \
+            -std=c99 -Wall -Wextra -Wpedantic -Wconversion -Werror \
+            -Os -ffunction-sections -fdata-sections \
+            -o /dev/null
+
+      - name: Compile library for Cortex-M4 (soft float)
+        run: |
+          arm-none-eabi-gcc -c oscp_imu.c \
+            -I. -Ithird-party/cobs-c \
+            -mcpu=cortex-m4 -mthumb -mfloat-abi=soft \
+            -std=c99 -Wall -Wextra -Wpedantic -Wconversion -Werror \
+            -Os -o /dev/null
+
+  build-32bit:
+    name: 32-bit build & test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install multilib
+        run: sudo apt-get update && sudo apt-get install -y gcc-multilib
+
+      - name: Configure
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DOSCP_WARNINGS_AS_ERRORS=ON \
+            -DCMAKE_C_FLAGS=-m32 \
+            -DCMAKE_EXE_LINKER_FLAGS=-m32
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --verbose
+
+  big-endian-guard:
+    name: Big-endian guard fires
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install big-endian cross compiler
+        run: sudo apt-get update && sudo apt-get install -y gcc-powerpc-linux-gnu
+
+      - name: Expect compilation to FAIL on big-endian
+        run: |
+          if powerpc-linux-gnu-gcc -c oscp_imu.c -I. -Ithird-party/cobs-c -o /dev/null 2>/dev/null; then
+            echo "::error::oscp_imu.h compiled on a big-endian target; the #error guard did not fire"
+            exit 1
+          fi
+          echo "Big-endian guard fired as expected."
