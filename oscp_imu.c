@@ -465,7 +465,7 @@ oscp_err_t oscp_cmd_of(uint8_t *cmd, const size_t cmd_max_len, size_t *cmd_len, 
             return OSCP_ERR_INVALID;
     }
 
-    char buf[6];
+    char buf[7];
     snprintf(buf, sizeof(buf), "OF%c\r\n", (char)frame);
     return frame_ascii_cmd(buf, cmd, cmd_max_len, cmd_len, transport);
 }
@@ -479,7 +479,7 @@ oscp_err_t oscp_cmd_om(uint8_t *cmd, const size_t cmd_max_len, size_t *cmd_len, 
         default:
             return OSCP_ERR_INVALID;
     }
-    char buf[6];
+    char buf[7];
     snprintf(buf, sizeof(buf), "OM%c\r\n", (char)mode);
     return frame_ascii_cmd(buf, cmd, cmd_max_len, cmd_len, transport);
 }
@@ -497,7 +497,7 @@ oscp_err_t oscp_cmd_enable_oft(uint8_t *cmd, const size_t cmd_max_len, size_t *c
         default:
             return OSCP_ERR_INVALID;
     }
-    char buf[8];
+    char buf[9];
     snprintf(buf, sizeof(buf), "EOFT%c\r\n", (char)frame);
     return frame_ascii_cmd(buf, cmd, cmd_max_len, cmd_len, transport);
 }
@@ -514,7 +514,7 @@ oscp_err_t oscp_cmd_disable_oft(uint8_t *cmd, const size_t cmd_max_len, size_t *
         default:
             return OSCP_ERR_INVALID;
     }
-    char buf[8];
+    char buf[9];
     snprintf(buf, sizeof(buf), "DOFT%c\r\n", (char)frame);
     return frame_ascii_cmd(buf, cmd, cmd_max_len, cmd_len, transport);
 }
@@ -533,7 +533,7 @@ oscp_err_t oscp_cmd_drg(uint8_t *cmd, const size_t cmd_max_len, size_t *cmd_len,
             return OSCP_ERR_INVALID;
     }
 
-    char buf[10];
+    char buf[11];
     snprintf(buf, sizeof(buf), "DRG%04u\r\n", (unsigned int)dr);
     return frame_ascii_cmd(buf, cmd, cmd_max_len, cmd_len, transport);
 }
@@ -548,7 +548,7 @@ oscp_err_t oscp_cmd_dra(uint8_t *cmd, const size_t cmd_max_len, size_t *cmd_len,
         default:
             return OSCP_ERR_INVALID;
     }
-    char buf[8];
+    char buf[9];
     snprintf(buf, sizeof(buf), "DRA%02u\r\n", (unsigned int)dr);
     return frame_ascii_cmd(buf, cmd, cmd_max_len, cmd_len, transport);
 }
@@ -564,7 +564,7 @@ oscp_err_t oscp_cmd_dri(uint8_t *cmd, const size_t cmd_max_len, size_t *cmd_len,
             return OSCP_ERR_INVALID;
     }
     const unsigned int tenths = (unsigned int)dr;
-    char buf[9];
+    char buf[10];
     snprintf(buf, sizeof(buf), "DRI%u.%u\r\n", tenths / 10u, tenths % 10u);
     return frame_ascii_cmd(buf, cmd, cmd_max_len, cmd_len, transport);
 }
@@ -580,7 +580,7 @@ oscp_err_t oscp_cmd_disable_mcorr(uint8_t *cmd, const size_t cmd_max_len, size_t
 oscp_err_t oscp_cmd_wr(uint8_t *cmd, const size_t cmd_max_len, size_t *cmd_len, const oscp_usr_reg_t reg, const uint32_t value, const oscp_transport_t transport) {
     if ((size_t)reg >= OSCP_USR_REG_TABLE_LEN) return OSCP_ERR_INVALID;
     /* Format: WR + 3-char mnemonic + 8 uppercase hex digits + \r\n = 15 chars */
-    char buf[16];
+    char buf[17];
     snprintf(buf, sizeof(buf), "WR%s%08" PRIX32 "\r\n", OSCP_USR_REG_STR[reg], value);
     return frame_ascii_cmd(buf, cmd, cmd_max_len, cmd_len, transport);
 }
