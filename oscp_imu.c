@@ -402,7 +402,7 @@ oscp_err_t oscp_frame_decode(const uint8_t *payload, const size_t len, oscp_fram
 /* Helpers */
 /* Frames an ASCII command for the selected transport:
  *   - RS422: COBS-encode the ASCII, then append the 0x00 delimiter.
- *   - CANFD: Copy the raw ASCII; the CANFD controller frames the message,
+ *   - CAN-FD: Copy the raw ASCII; the CAN-FD controller frames the message,
  *            and the caller sets the command identifier + DLC. No COBS, no delimiter. */
 static oscp_err_t frame_ascii_cmd(const char *ascii, uint8_t *enc, const size_t enc_max_len, size_t *enc_len, const oscp_transport_t transport) {
     if (!ascii || !enc || !enc_len) return OSCP_ERR_NULL;
