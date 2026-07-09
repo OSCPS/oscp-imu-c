@@ -115,7 +115,7 @@ static const char * const OSCP_USR_REG_STR[] = {
  * SHARED — used by every integration path
  * ==========================================================================*/
 
-/** CRC-16 (koopman poly 0xD175, normal form 0xAE2B, init 0xFFFF, no reflection). Exposed for tooling and tests. */
+/** CRC-16 (koopman poly 0xD175, normal form 0xA2EB, init 0xFFFF, no reflection). Exposed for tooling and tests. */
 uint16_t oscp_crc16(const uint8_t *data, size_t len) {
     uint16_t crc = 0xFFFF;
     for (size_t i = 0; i < len; i++) {
