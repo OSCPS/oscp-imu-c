@@ -39,6 +39,7 @@
 #define OSCP_STATUS_INCL_ERR    0x04U /** Inclinometer Error */
 #define OSCP_STATUS_MAG_ERR     0x08U /** Magnetometer Error */
 #define OSCP_STATUS_TEMP_ERR    0x10U /** Temperature Sensor Error */
+#define OSCP_STATUS_GNSS_ERR    0x20U /** GNSS Error */
 #define OSCP_STATUS_OG_ERR      0x40U /** Optical Gyroscope Error */
 
 /* Enabled Frames Masks */
